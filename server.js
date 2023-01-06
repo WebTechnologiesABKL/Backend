@@ -3,7 +3,7 @@ const express = require("express");
 const socketIo = require("socket.io");
 const geoip = require("geoip-lite");
 
-const SERVER_PORT = 8080;
+const SERVER_PORT = 8085;
 
 const users = [];
 
@@ -106,6 +106,7 @@ function onNewWebsocketConnection(socket) {
         let time = new Date();
         let country;
         let city;
+        console.log(geo);
         if(geo){
             country = geo.country;
             city = geo.city;
