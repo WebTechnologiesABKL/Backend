@@ -1,7 +1,8 @@
 const http = require("http");
 const express = require("express");
 const socketIo = require("socket.io");
-const geoip = require("geoip-lite");
+let ipInfo = require("ip-info-finder");
+
 
 const SERVER_PORT = 8085;
 
@@ -102,19 +103,15 @@ function onNewWebsocketConnection(socket) {
         console.info(`Socket ${socket.id} has sent information:`);
         console.info(data);
 
-        let geo = geoip.lookup(socket.conn.remoteAddress);
         let time = new Date();
-        let country;
-        let city;
-        console.log(geo);
-        if(geo){
-            country = geo.country;
-            city = geo.city;
-        }else{
-            country = "DE";
-            city = "Bielefeld";
-        }
-
+        let country = "DE";
+        let city = "Bielefeld";
+        ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
+            country = data.location[0].adress.country_code;
+            city = data.location[0].adress.county;
+        })
+            .catch(err => console.log(err));
+        console.log(city, country);
 
         //interpretiere text mit RASA
 
