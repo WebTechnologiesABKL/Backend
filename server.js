@@ -108,8 +108,8 @@ function onNewWebsocketConnection(socket) {
         let city = "Bielefeld";
         ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
             console.log(data);
-            country = data.location[0].adress.country_code;
-            city = data.location[0].adress.county;
+            country = data.location[0].address.country_code;
+            city = data.location[0].address.county;
         })
             .catch(err => console.log(err));
         console.log(city, country);
