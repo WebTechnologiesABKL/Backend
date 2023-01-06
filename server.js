@@ -109,6 +109,7 @@ function onNewWebsocketConnection(socket) {
         await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
             if(data.location[0].address.country_code){
                 country = data.location[0].address.country_code;
+                country = country.toUpperCase();
             }else if(data.location[0].address.country){
                 country = data.location[0].address.country;
             }
