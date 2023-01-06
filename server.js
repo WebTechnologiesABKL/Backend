@@ -106,13 +106,11 @@ function onNewWebsocketConnection(socket) {
         let time = new Date();
         let country = "DE";
         let city = "Bielefeld";
-        ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
-            console.log(data);
+        await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
             country = data.location[0].address.country_code;
-            city = data.location[0].address.county;
+            city = data.location[0].address.city;
         })
             .catch(err => console.log(err));
-        console.log(city, country);
 
         //interpretiere text mit RASA
 
