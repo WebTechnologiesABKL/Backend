@@ -106,24 +106,27 @@ function onNewWebsocketConnection(socket) {
         let time = new Date();
         let country = "DE";
         let city = "Bielefeld";
-        await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
-            if(data.location[0].address.country_code){
-                country = data.location[0].address.country_code;
-                country = country.toUpperCase();
-            }else if(data.location[0].address.country){
-                country = data.location[0].address.country;
-            }
-            if(data.location[0].address.city){
-                city = data.location[0].address.city;
-            }else if(data.location[0].address.town){
-                city = data.location[0].address.town;
-            }else if(data.location[0].address.county){
-                city = data.location[0].address.county;
-            }
+        try{
+            await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
+                if(data.location[0].address.country_code){
+                    country = data.location[0].address.country_code;
+                    country = country.toUpperCase();
+                }else if(data.location[0].address.country){
+                    country = data.location[0].address.country;
+                }
+                if(data.location[0].address.city){
+                    city = data.location[0].address.city;
+                }else if(data.location[0].address.town){
+                    city = data.location[0].address.town;
+                }else if(data.location[0].address.county){
+                    city = data.location[0].address.county;
+                }
+            })
+                .catch(err => console.log("Could not interpret IP Address!"));
+        }catch(e){
+            console.log("Could not interpret IP Address!");
+        }
 
-
-        })
-            .catch(err => console.log(err));
 
         //interpretiere text mit RASA
 
