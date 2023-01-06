@@ -1,12 +1,56 @@
 const http = require("http");
 const express = require("express");
 const socketIo = require("socket.io");
+const geoip = require("geoip-lite");
 
 const SERVER_PORT = 8080;
 
 const users = [];
 
+function convertDateToString(date){
+    let dateString = "";
+    switch (date.getDay()) {
+        case 0:
+            dateString = "Sonntag, den ";
+            break;
+        case 1:
+            dateString = "Montag, den ";
+            break;
+        case 2:
+            dateString = "Dienstag, den ";
+            break;
+        case 3:
+            dateString = "Mittwoch, den ";
+            break;
+        case 4:
+            dateString = "Donnerstag, den ";
+            break;
+        case 5:
+            dateString = "Freitag, den ";
+            break;
+        case 6:
+            dateString = "Samstag, den ";
+            break;
+    }
+    if(date.getDate() < 10){
+        dateString += "0" + date.getDate();
+    }else{
+        dateString += date.getDate();
+    }
+    if(date.getMonth() < 9){
+        dateString += ".0" + (date.getMonth() + 1);
+    }else{
+        dateString += (date.getMonth() + 1);
+    }
+    dateString += "." + date.getFullYear();
+    return dateString;
+}
 
+function convertWeatherToString(weather){
+    let weatherString = weather.weather.weather[0].icon + ' bei ' + weather.weather.weather[0].temperature + '°C.';
+
+    return weatherString;
+}
 async function getWeather(time, city, country){
     return new Promise(resolve => {
         http.get('http://localhost:8090/weather?city=' + city + '&country=' + country + '&time=' + time, (resp) => {
@@ -34,6 +78,7 @@ function onNewWebsocketConnection(socket) {
     console.info(`Socket ${socket.id} has connected.`);
     users.push({
         socketId: socket.id,
+        ipAddress: socket.conn.remoteAddress,
         lastMessage: "",
         lastCity: "",
         lastCountry: "DE",
@@ -57,17 +102,26 @@ function onNewWebsocketConnection(socket) {
         console.info(`Socket ${socket.id} has sent information:`);
         console.info(data);
 
+        let geo = geoip.lookup(socket.conn.remoteAddress);
         let time = new Date();
-        let country = "DE";
-        let city = "Bielefeld";
+        let country;
+        let city;
+        if(geo){
+            country = geo.country;
+            city = geo.city;
+        }else{
+            country = "DE";
+            city = "Bielefeld";
+        }
+
 
         //interpretiere text mit RASA
 
         let weather = await getWeather(time, city, country);
-
+        let weatherString = convertWeatherToString(weather);
         socket.emit("chat", {
-            message: 'We received your message ("' + data.message + '")\nDas Wetter in ' + city + ', ' + country + ' ist am '+ time.getDay() + ' den ' + time.getDate() + '.' +
-                (time.getMonth() + 1) + '.' + time.getFullYear() + ' ' + weather.weather.weather[0].icon + ' bei ' + weather.weather.weather[0].temperature + '°C.'
+            message: 'We received your message ("' + data.message + '")\nDas Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
+                ' ' + weatherString
         });
         users.forEach((user, i) => {
             if(user.socketId == socket.id){
