@@ -48,7 +48,24 @@ function convertDateToString(date){
 }
 
 function convertWeatherToString(weather){
-    let weatherString = weather.weather.weather[0].icon + ' bei ' + weather.weather.weather[0].temperature + '°C.';
+    let icon = weather.weather.weather[0].icon;
+    switch (icon) {
+        case "cloudy":
+            icon = "bewölkt";
+            break;
+        case "sunny":
+            icon = "sonnig";
+            break;
+        case "rain":
+            icon = "regnerisch";
+            break;
+        case "partly-cloudy-day":
+            icon = "teilweise bewölkt";
+            break;
+    }
+    let weatherString = icon + ' bei ' + weather.weather.weather[0].temperature + '°C.';
+
+
 
     return weatherString;
 }
@@ -103,6 +120,10 @@ function onNewWebsocketConnection(socket) {
         console.info(`Socket ${socket.id} has sent information:`);
         console.info(data);
 
+        socket.emit("writing", {
+           active: true
+        });
+
         let time = new Date();
         let country = "DE";
         let city = "Bielefeld";
@@ -131,11 +152,22 @@ function onNewWebsocketConnection(socket) {
         //interpretiere text mit RASA
 
         let weather = await getWeather(time, city, country);
-        let weatherString = convertWeatherToString(weather);
-        socket.emit("chat", {
-            message: 'We received your message ("' + data.message + '")\nDas Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
-                ' ' + weatherString
+        socket.emit("writing", {
+            active: false
         });
+        try{
+            let weatherString = convertWeatherToString(weather);
+
+            socket.emit("chat", {
+                message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
+                    ' ' + weatherString
+            });
+        }catch(e){
+            socket.emit("chat", {
+                message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal'
+            });
+        }
+
         users.forEach((user, i) => {
             if(user.socketId == socket.id){
                 users[i].lastMessage = data.message;
@@ -145,7 +177,7 @@ function onNewWebsocketConnection(socket) {
 
     // will send a message only to this socket (different than using `io.emit()`, which would broadcast it)
     socket.emit("welcome", {
-        socketId: socket.id
+        message: "Wilkommen beim Wetter Chatbot, fragen Sie mich etwas &#128516;"
     });
 }
 
