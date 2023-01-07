@@ -71,7 +71,7 @@ function convertWeatherToString(weather){
 }
 async function getWeather(time, city, country){
     return new Promise(resolve => {
-        http.get('http://localhost:8090/weather?city=' + city + '&country=' + country + '&time=' + time, (resp) => {
+        http.get('http://weather:8090/weather?city=' + city + '&country=' + country + '&time=' + time, (resp) => {
             let data = '';
 
             // A chunk of data has been received.
