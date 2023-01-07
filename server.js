@@ -177,7 +177,7 @@ function onNewWebsocketConnection(socket) {
 
     // will send a message only to this socket (different than using `io.emit()`, which would broadcast it)
     socket.emit("welcome", {
-        message: "Wilkommen beim Wetter Chatbot, fragen Sie mich etwas &#128516;"
+        message: "Wilkommen beim Wetter Chatbot, fragen Sie mich etwas 🌞"
     });
 }
 
