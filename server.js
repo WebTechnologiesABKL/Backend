@@ -254,9 +254,9 @@ function onNewWebsocketConnection(socket) {
                 if(entity.entity === "LOC"){
                     city = entity.value;
                 }else if(entity.entity === "time"){
-                    try {
+                    if(entity.value.from){
                         time = new Date(((new Date(entity.value.from)) + (new Date(entity.value.to))) / 2);
-                    }catch(e) {
+                    }else {
                         time = (new Date(entity.value)).addHours(12);
                     }
                 }
