@@ -206,108 +206,119 @@ function onNewWebsocketConnection(socket) {
            active: true
         });
 
-        let time = new Date();
-        let country = "DE";
-        let city = "new";
-        let userNumber = 0;
         try{
-            await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
-                console.log(data);
-                if(data.location[0].address.country_code){
-                    country = data.location[0].address.country_code;
-                    country = country.toUpperCase();
-                }else if(data.location[0].address.country){
-                    country = data.location[0].address.country;
-                }
-                if(data.location[0].address.city){
-                    city = data.location[0].address.city;
-                }else if(data.location[0].address.town){
-                    city = data.location[0].address.town;
-                }else if(data.location[0].address.county){
-                    city = data.location[0].address.county;
-                }
-            })
-                .catch(err => console.log("Could not interpret IP Address!"));
-
-        }catch(e){
-            console.log("Could not interpret IP Address!");
-        }
-
-        users.forEach((user, i) => {
-            if(user.socketId == socket.id){
-                if(users[i].lastCity !== "new"){
-                    city = users[i].lastCity;
-                    country = users[i].lastCountry;
-                }else if(city == "new"){
-                    city = "Bielefeld";
-                    country = "DE";
-                }
-
-                userNumber = i;
-            }
-        });
-
-        let interpretation = await interpretMessage(data.message);
-        console.log(JSON.stringify(await interpretation));
-        if(await interpretation.entities.length > 0 || await interpretation.intent.name == "weather"){
-            await interpretation.entities.forEach(entity => {
-                if(entity.entity === "LOC"){
-                    city = entity.value;
-                }else if(entity.entity === "time"){
-                    if(entity.value.from){
-                        time = new Date(((new Date(entity.value.from)) + (new Date(entity.value.to))) / 2);
-                    }else {
-                        time = (new Date(entity.value)).addHours(12);
-                    }
-                }
-            });
-            let weather = await getWeather(time, city, country);
-            socket.emit("writing", {
-                active: false
-            });
+            let time = new Date();
+            let country = "DE";
+            let city = "new";
+            let userNumber = 0;
             try{
-                let weatherString = convertWeatherToString(weather);
-
-                socket.emit("chat", {
-                    message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
-                        ' ' + weatherString
-                });
-
-                users.forEach((user, i) => {
-                    if(user.socketId == socket.id){
-                        users[i].lastMessage = data.message;
-                        users[i].lastCity = city;
-                        users[i].lastCountry = country;
+                await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
+                    console.log(data);
+                    if(data.location[0].address.country_code){
+                        country = data.location[0].address.country_code;
+                        country = country.toUpperCase();
+                    }else if(data.location[0].address.country){
+                        country = data.location[0].address.country;
                     }
-                });
-            }catch(e){
-                socket.emit("chat", {
-                    message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal'
-                });
-            }
-        }else{
-            let answer = await answerMessage(userNumber, data.message);
+                    if(data.location[0].address.city){
+                        city = data.location[0].address.city;
+                    }else if(data.location[0].address.town){
+                        city = data.location[0].address.town;
+                    }else if(data.location[0].address.county){
+                        city = data.location[0].address.county;
+                    }
+                })
+                    .catch(err => console.log("Could not interpret IP Address!"));
 
-            console.log(JSON.stringify(await answer));
-            socket.emit("writing", {
-                active: false
-            });
-            if(await answer.length > 0){
-                socket.emit("chat", {
-                    message: await answer[0].text
-                });
-            }else{
-                socket.emit("chat", {
-                    message: "Ich habe Probleme deine Anfrage zu beantworten..."
-                });
+            }catch(e){
+                console.log("Could not interpret IP Address!");
             }
 
             users.forEach((user, i) => {
                 if(user.socketId == socket.id){
-                    users[i].lastMessage = data.message;
+                    if(users[i].lastCity !== "new"){
+                        city = users[i].lastCity;
+                        country = users[i].lastCountry;
+                    }else if(city == "new"){
+                        city = "Bielefeld";
+                        country = "DE";
+                    }
+
+                    userNumber = i;
                 }
             });
+
+            let interpretation = await interpretMessage(data.message);
+            console.log(JSON.stringify(await interpretation));
+            if(await interpretation.entities.length > 0 || await interpretation.intent.name == "weather"){
+                await interpretation.entities.forEach(entity => {
+                    if(entity.entity === "LOC"){
+                        city = entity.value;
+                    }else if(entity.entity === "time"){
+                        if(entity.value.from){
+                            time = new Date(((new Date(entity.value.from)) + (new Date(entity.value.to))) / 2);
+                        }else {
+                            time = (new Date(entity.value)).addHours(12);
+                        }
+                    }
+                });
+                let weather = await getWeather(time, city, country);
+                socket.emit("writing", {
+                    active: false
+                });
+                try{
+                    let weatherString = convertWeatherToString(weather);
+
+                    socket.emit("chat", {
+                        message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
+                            ' ' + weatherString
+                    });
+
+                    users.forEach((user, i) => {
+                        if(user.socketId == socket.id){
+                            users[i].lastMessage = data.message;
+                            users[i].lastCity = city;
+                            users[i].lastCountry = country;
+                        }
+                    });
+                }catch(e){
+                    socket.emit("chat", {
+                        message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal'
+                    });
+                }
+            }else{
+                let answer = await answerMessage(userNumber, data.message);
+
+                console.log(JSON.stringify(await answer));
+                socket.emit("writing", {
+                    active: false
+                });
+                if(await answer.length > 0){
+                    socket.emit("chat", {
+                        message: await answer[0].text
+                    });
+                }else{
+                    socket.emit("chat", {
+                        message: "Ich habe Probleme deine Anfrage zu beantworten..."
+                    });
+                }
+
+                users.forEach((user, i) => {
+                    if(user.socketId == socket.id){
+                        users[i].lastMessage = data.message;
+                    }
+                });
+            }
+        }catch(e){
+            socket.emit("writing", {
+                active: false
+            });
+            socket.emit("chat", {
+                message: "Ich habe Probleme deine Anfrage zu beantworten..."
+            });
         }
+
+
     });
 
     // will send a message only to this socket (different than using `io.emit()`, which would broadcast it)
