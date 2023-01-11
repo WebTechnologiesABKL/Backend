@@ -49,6 +49,19 @@ function convertDateToString(date){
         dateString += (date.getMonth() + 1);
     }
     dateString += "." + date.getFullYear();
+
+    if(date.getHours() < 10){
+        dateString += " - 0" + date.getHours();
+    }else{
+        dateString += " - " + date.getHours();
+    }
+
+    if(date.getMinutes() < 10){
+        dateString += ":0" + date.getMinutes();
+    }else{
+        dateString += ":" + date.getMinutes();
+    }
+
     return dateString;
 }
 
