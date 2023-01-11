@@ -8,6 +8,11 @@ const SERVER_PORT = 8085;
 
 const users = [];
 
+Date.prototype.addHours = function(h) {
+    this.setTime(this.getTime() + (h*60*60*1000));
+    return this;
+}
+
 function convertDateToString(date){
     let dateString = "";
     switch (date.getDay()) {
@@ -241,7 +246,11 @@ function onNewWebsocketConnection(socket) {
                 if(entity.entity === "LOC"){
                     city = entity.value;
                 }else if(entity.entity === "time"){
-                    time = new Date(entity.value);
+                    if(typeof entity.entity === "string"){
+                        time = (new Date(entity.value)).addHours(12);
+                    }else{
+                        time = new Date(((new Date(entity.value.from)) + (new Date(entity.value.to))) / 2);
+                    }
                 }
             });
             let weather = await getWeather(time, city, country);
@@ -277,7 +286,7 @@ function onNewWebsocketConnection(socket) {
             });
             if(await answer.length > 0){
                 socket.emit("chat", {
-                    message: answer[0].message
+                    message: await answer[0].text
                 });
             }else{
                 socket.emit("chat", {
