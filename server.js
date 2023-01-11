@@ -92,13 +92,90 @@ async function getWeather(time, city, country){
         });
     });
 }
+
+async function interpretMessage(text){
+    return new Promise(resolve => {
+        const data = JSON.stringify({
+            text: text
+        });
+        const options = {
+            hostname: 'rasa',
+            port: 5005,
+            path: '/model/parse',
+            method: 'POST'
+        }
+
+        const req = http
+            .request(options, res => {
+                let data = ''
+
+
+                res.on('data', chunk => {
+                    data += chunk
+                })
+
+                res.on('end', () => {
+                    resolve(JSON.parse(data))
+                })
+            })
+            .on('error', err => {
+                console.log("Error: " + err.message);
+                resolve({
+                    error: err.message
+                })
+            })
+
+        req.write(data)
+        req.end()
+    });
+}
+
+
+async function answerMessage(userID, text){
+    return new Promise(resolve => {
+        const data = JSON.stringify({
+            user: userID,
+            message: text
+        });
+        const options = {
+            hostname: 'rasa',
+            port: 5005,
+            path: '/webhooks/rest/webhook',
+            method: 'POST'
+        }
+
+        const req = http
+            .request(options, res => {
+                let data = ''
+
+
+                res.on('data', chunk => {
+                    data += chunk
+                })
+
+                res.on('end', () => {
+                    resolve(JSON.parse(data))
+                })
+            })
+            .on('error', err => {
+                console.log("Error: " + err.message);
+                resolve({
+                    error: err.message
+                })
+            })
+
+        req.write(data)
+        req.end()
+    });
+}
+
 function onNewWebsocketConnection(socket) {
     console.info(`Socket ${socket.id} has connected.`);
     users.push({
         socketId: socket.id,
         ipAddress: socket.conn.remoteAddress,
         lastMessage: "",
-        lastCity: "",
+        lastCity: "Bielefeld",
         lastCountry: "DE",
         lastTime: new Date()
     })
@@ -127,6 +204,12 @@ function onNewWebsocketConnection(socket) {
         let time = new Date();
         let country = "DE";
         let city = "Bielefeld";
+        users.forEach((user, i) => {
+            if(user.socketId == socket.id){
+                city = users[i].lastCity;
+                country = users[i].lastCountry;
+            }
+        });
         try{
             await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
                 if(data.location[0].address.country_code){
@@ -144,35 +227,60 @@ function onNewWebsocketConnection(socket) {
                 }
             })
                 .catch(err => console.log("Could not interpret IP Address!"));
+
         }catch(e){
             console.log("Could not interpret IP Address!");
         }
 
+        let interpretation = await interpretMessage(data.message);
 
-        //interpretiere text mit RASA
-
-        let weather = await getWeather(time, city, country);
-        socket.emit("writing", {
-            active: false
-        });
-        try{
-            let weatherString = convertWeatherToString(weather);
-
-            socket.emit("chat", {
-                message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
-                    ' ' + weatherString
+        if(await interpretation.entities.length > 0){
+            await interpretation.entities.forEach(entity => {
+                if(entity.entity === "LOC"){
+                    city = entity.value;
+                }else if(entity.entity === "time"){
+                    time = new Date(entity.value);
+                }
             });
-        }catch(e){
-            socket.emit("chat", {
-                message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal'
+            let weather = await getWeather(time, city, country);
+            socket.emit("writing", {
+                active: false
+            });
+            try{
+                let weatherString = convertWeatherToString(weather);
+
+                socket.emit("chat", {
+                    message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
+                        ' ' + weatherString
+                });
+
+                users.forEach((user, i) => {
+                    if(user.socketId == socket.id){
+                        users[i].lastMessage = data.message;
+                        users[i].lastCity = city;
+                        users[i].lastCountry = country;
+                    }
+                });
+            }catch(e){
+                socket.emit("chat", {
+                    message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal'
+                });
+            }
+        }else{
+            let answer = await answerMessage(socket.id, data.message);
+
+            if(await answer.length > 0){
+                socket.emit("chat", {
+                    message: answer[0].message
+                });
+            }
+
+            users.forEach((user, i) => {
+                if(user.socketId == socket.id){
+                    users[i].lastMessage = data.message;
+                }
             });
         }
-
-        users.forEach((user, i) => {
-            if(user.socketId == socket.id){
-                users[i].lastMessage = data.message;
-            }
-        })
     });
 
     // will send a message only to this socket (different than using `io.emit()`, which would broadcast it)
