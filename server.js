@@ -212,6 +212,7 @@ function onNewWebsocketConnection(socket) {
         let userNumber = 0;
         try{
             await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
+                console.log(data);
                 if(data.location[0].address.country_code){
                     country = data.location[0].address.country_code;
                     country = country.toUpperCase();
@@ -253,10 +254,10 @@ function onNewWebsocketConnection(socket) {
                 if(entity.entity === "LOC"){
                     city = entity.value;
                 }else if(entity.entity === "time"){
-                    if(typeof entity.entity === "string"){
-                        time = (new Date(entity.value)).addHours(12);
-                    }else{
+                    try {
                         time = new Date(((new Date(entity.value.from)) + (new Date(entity.value.to))) / 2);
+                    }catch(e) {
+                        time = (new Date(entity.value)).addHours(12);
                     }
                 }
             });
