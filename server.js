@@ -204,10 +204,12 @@ function onNewWebsocketConnection(socket) {
         let time = new Date();
         let country = "DE";
         let city = "Bielefeld";
+        let userNumber = 0;
         users.forEach((user, i) => {
             if(user.socketId == socket.id){
                 city = users[i].lastCity;
                 country = users[i].lastCountry;
+                userNumber = i;
             }
         });
         try{
@@ -233,8 +235,8 @@ function onNewWebsocketConnection(socket) {
         }
 
         let interpretation = await interpretMessage(data.message);
-
-        if(await interpretation.entities.length > 0){
+        console.log(JSON.stringify(await interpretation));
+        if(await interpretation.entities.length > 0 || await interpretation.intent.name == "weather"){
             await interpretation.entities.forEach(entity => {
                 if(entity.entity === "LOC"){
                     city = entity.value;
@@ -267,11 +269,19 @@ function onNewWebsocketConnection(socket) {
                 });
             }
         }else{
-            let answer = await answerMessage(socket.id, data.message);
+            let answer = await answerMessage(userNumber, data.message);
 
+            console.log(JSON.stringify(await answer));
+            socket.emit("writing", {
+                active: false
+            });
             if(await answer.length > 0){
                 socket.emit("chat", {
                     message: answer[0].message
+                });
+            }else{
+                socket.emit("chat", {
+                    message: "Ich habe Probleme deine Anfrage zu beantworten..."
                 });
             }
 
