@@ -208,15 +208,8 @@ function onNewWebsocketConnection(socket) {
 
         let time = new Date();
         let country = "DE";
-        let city = "Bielefeld";
+        let city = "new";
         let userNumber = 0;
-        users.forEach((user, i) => {
-            if(user.socketId == socket.id){
-                city = users[i].lastCity;
-                country = users[i].lastCountry;
-                userNumber = i;
-            }
-        });
         try{
             await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
                 if(data.location[0].address.country_code){
@@ -238,6 +231,20 @@ function onNewWebsocketConnection(socket) {
         }catch(e){
             console.log("Could not interpret IP Address!");
         }
+
+        users.forEach((user, i) => {
+            if(user.socketId == socket.id){
+                if(users[i].lastCity !== "new"){
+                    city = users[i].lastCity;
+                    country = users[i].lastCountry;
+                }else if(city == "new"){
+                    city = "Bielefeld";
+                    country = "DE";
+                }
+
+                userNumber = i;
+            }
+        });
 
         let interpretation = await interpretMessage(data.message);
         console.log(JSON.stringify(await interpretation));
