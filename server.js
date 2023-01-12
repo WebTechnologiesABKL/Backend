@@ -193,7 +193,7 @@ function onNewWebsocketConnection(socket) {
         socketId: socket.id,
         ipAddress: socket.conn.remoteAddress,
         lastMessage: "",
-        lastCity: "Bielefeld",
+        lastCity: "new",
         lastCountry: "DE",
         lastTime: new Date()
     })
