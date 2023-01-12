@@ -224,7 +224,11 @@ async function onNewWebsocketConnection(socket) {
 
     socket.on("disconnect", () => {
         console.info(`Socket ${socket.id} has disconnected.`);
-        users.splice(userNumber, 1)
+        users.forEach((user, i) => {
+           if(user.socketId == socker.id){
+               users.splice(i, 1);
+           }
+        });
         console.log(users);
     });
 
