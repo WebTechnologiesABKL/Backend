@@ -226,7 +226,7 @@ function onNewWebsocketConnection(socket) {
             let userNumber = 0;
             try{
                 await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
-                    console.log(data);
+                    console.log(JSON.stringify(data));
                     if(data.location[0].address.country_code){
                         country = data.location[0].address.country_code;
                         country = country.toUpperCase();
