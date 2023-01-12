@@ -187,26 +187,44 @@ async function answerMessage(userID, text){
     });
 }
 
-function onNewWebsocketConnection(socket) {
+async function onNewWebsocketConnection(socket) {
     console.info(`Socket ${socket.id} has connected.`);
-    users.push({
+    let userNumber = users.push({
         socketId: socket.id,
         ipAddress: socket.conn.remoteAddress,
         lastMessage: "",
         lastCity: "new",
         lastCountry: "DE",
         lastTime: new Date()
-    })
+    }) - 1;
+    try{
+        await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
+            console.log(JSON.stringify(data));
+            if(data.location[0].address.country_code){
+               users[userNumber].lastCountry = data.location[0].address.country_code;
+               users[userNumber].lastCountry = users[userNumber].lastCountry.toUpperCase();
+            }else if(data.location[0].address.country){
+                users[userNumber].lastCountry = data.location[0].address.country;
+            }
+            if(data.location[0].address.city){
+                users[userNumber].lastCity = data.location[0].address.city;
+            }else if(data.location[0].address.town){
+                users[userNumber].lastCity = data.location[0].address.town;
+            }else if(data.location[0].address.county){
+                users[userNumber].lastCity = data.location[0].address.county;
+            }
+        })
+            .catch(err => console.log("Could not interpret IP Address!"));
+
+    }catch(e){
+        console.log("Could not interpret IP Address!");
+    }
     console.log(users);
 
 
     socket.on("disconnect", () => {
         console.info(`Socket ${socket.id} has disconnected.`);
-        users.forEach((user, i) => {
-            if(user.socketId == socket.id){
-                users.splice(i, 1);
-            }
-        });
+        users.splice(userNumber, 1)
         console.log(users);
     });
 
@@ -223,43 +241,13 @@ function onNewWebsocketConnection(socket) {
             let time = new Date();
             let country = "DE";
             let city = "new";
-            let userNumber = 0;
-            try{
-                await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
-                    console.log(JSON.stringify(data));
-                    if(data.location[0].address.country_code){
-                        country = data.location[0].address.country_code;
-                        country = country.toUpperCase();
-                    }else if(data.location[0].address.country){
-                        country = data.location[0].address.country;
-                    }
-                    if(data.location[0].address.city){
-                        city = data.location[0].address.city;
-                    }else if(data.location[0].address.town){
-                        city = data.location[0].address.town;
-                    }else if(data.location[0].address.county){
-                        city = data.location[0].address.county;
-                    }
-                })
-                    .catch(err => console.log("Could not interpret IP Address!"));
-
-            }catch(e){
-                console.log("Could not interpret IP Address!");
+            if(users[userNumber].lastCity !== "new"){
+                city = users[userNumber].lastCity;
+                country = users[userNumber].lastCountry;
+            }else if(city == "new"){
+                city = "Bielefeld";
+                country = "DE";
             }
-
-            users.forEach((user, i) => {
-                if(user.socketId == socket.id){
-                    if(users[i].lastCity !== "new"){
-                        city = users[i].lastCity;
-                        country = users[i].lastCountry;
-                    }else if(city == "new"){
-                        city = "Bielefeld";
-                        country = "DE";
-                    }
-
-                    userNumber = i;
-                }
-            });
 
             let interpretation = await interpretMessage(data.message);
             console.log(JSON.stringify(await interpretation));
@@ -286,14 +274,9 @@ function onNewWebsocketConnection(socket) {
                         message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
                             ' ' + weatherString
                     });
-
-                    users.forEach((user, i) => {
-                        if(user.socketId == socket.id){
-                            users[i].lastMessage = data.message;
-                            users[i].lastCity = city;
-                            users[i].lastCountry = country;
-                        }
-                    });
+                    users[userNumber].lastMessage = data.message;
+                    users[userNumber].lastCity = city;
+                    users[userNumber].lastCountry = country;
                 }catch(e){
                     socket.emit("chat", {
                         message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal'
@@ -316,11 +299,8 @@ function onNewWebsocketConnection(socket) {
                     });
                 }
 
-                users.forEach((user, i) => {
-                    if(user.socketId == socket.id){
-                        users[i].lastMessage = data.message;
-                    }
-                });
+                users[userNumber].lastMessage = data.message;
+
             }
         }catch(e){
             socket.emit("writing", {
