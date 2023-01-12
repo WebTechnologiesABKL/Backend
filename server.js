@@ -240,13 +240,10 @@ async function onNewWebsocketConnection(socket) {
         try{
             let time = new Date();
             let country = "DE";
-            let city = "new";
+            let city = "Bielefeld";
             if(users[userNumber].lastCity !== "new"){
                 city = users[userNumber].lastCity;
                 country = users[userNumber].lastCountry;
-            }else if(city == "new"){
-                city = "Bielefeld";
-                country = "DE";
             }
 
             let interpretation = await interpretMessage(data.message);
