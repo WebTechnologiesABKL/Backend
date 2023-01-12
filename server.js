@@ -196,7 +196,7 @@ async function onNewWebsocketConnection(socket) {
         lastCity: "new",
         lastCountry: "DE",
         lastTime: new Date()
-    }) - 1;
+    });
     try{
         await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
             console.log(JSON.stringify(data));
