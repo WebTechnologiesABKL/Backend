@@ -189,14 +189,20 @@ async function answerMessage(userID, text){
 
 async function onNewWebsocketConnection(socket) {
     console.info(`Socket ${socket.id} has connected.`);
-    let userNumber = users.push({
+    let userNumber = 0;
+    users.push({
         socketId: socket.id,
         ipAddress: socket.conn.remoteAddress,
         lastMessage: "",
         lastCity: "new",
         lastCountry: "DE",
         lastTime: new Date()
-    }) - 1;
+    });
+    users.forEach((user, i) => {
+       if(user.socketId == socket.id){
+           userNumber = i;
+       }
+    });
     try{
         await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
             console.log(JSON.stringify(data));
@@ -224,11 +230,7 @@ async function onNewWebsocketConnection(socket) {
 
     socket.on("disconnect", () => {
         console.info(`Socket ${socket.id} has disconnected.`);
-        users.forEach((user, i) => {
-           if(user.socketId == socket.id){
-               users.splice(i, 1);
-           }
-        });
+        users.splice(userNumber, 1);
         console.log(users);
     });
 
