@@ -28,6 +28,6 @@ jobs:
         name: Build and push
         uses: docker/build-push-action@v3
         with:
-          platforms: linux/arm/v8, linux/amd/64
+          platforms: linux/arm/v8, linux/amd64
           push: true
           tags: ${{ secrets.REGISTRY_HOST }}/webtechnologiesabkl/registry/backend:latest
