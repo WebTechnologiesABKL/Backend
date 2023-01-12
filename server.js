@@ -291,6 +291,7 @@ async function onNewWebsocketConnection(socket) {
                             users[i].lastMessage = data.message;
                             users[i].lastCity = city;
                             users[i].lastCountry = country;
+                            users[i].lastTime = time;
                         }
                     });
                 }catch(e){
