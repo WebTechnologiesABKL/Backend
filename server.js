@@ -256,6 +256,7 @@ async function onNewWebsocketConnection(socket) {
                     if(users[i].lastCity !== "new"){
                         city = users[i].lastCity;
                         country = users[i].lastCountry;
+                        time = users[i].lastTime;
                     }
                 }
             });
