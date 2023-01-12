@@ -225,7 +225,7 @@ async function onNewWebsocketConnection(socket) {
     socket.on("disconnect", () => {
         console.info(`Socket ${socket.id} has disconnected.`);
         users.forEach((user, i) => {
-           if(user.socketId == socker.id){
+           if(user.socketId == socket.id){
                users.splice(i, 1);
            }
         });
