@@ -189,7 +189,6 @@ async function answerMessage(userID, text){
 
 async function onNewWebsocketConnection(socket) {
     console.info(`Socket ${socket.id} has connected.`);
-    let userNumber = 0;
     users.push({
         socketId: socket.id,
         ipAddress: socket.conn.remoteAddress,
@@ -198,39 +197,44 @@ async function onNewWebsocketConnection(socket) {
         lastCountry: "DE",
         lastTime: new Date()
     });
-    users.forEach((user, i) => {
+    for (const user of users) {
+        const i = users.indexOf(user);
        if(user.socketId == socket.id){
-           userNumber = i;
-       }
-    });
-    try{
-        await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
-            console.log(JSON.stringify(data));
-            if(data.location[0].address.country_code){
-               users[userNumber].lastCountry = data.location[0].address.country_code;
-               users[userNumber].lastCountry = users[userNumber].lastCountry.toUpperCase();
-            }else if(data.location[0].address.country){
-                users[userNumber].lastCountry = data.location[0].address.country;
-            }
-            if(data.location[0].address.city){
-                users[userNumber].lastCity = data.location[0].address.city;
-            }else if(data.location[0].address.town){
-                users[userNumber].lastCity = data.location[0].address.town;
-            }else if(data.location[0].address.county){
-                users[userNumber].lastCity = data.location[0].address.county;
-            }
-        })
-            .catch(err => console.log("Could not interpret IP Address!"));
+           try{
+               await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
+                   console.log(JSON.stringify(data));
+                   if(data.location[0].address.country_code){
+                       users[i].lastCountry = data.location[0].address.country_code;
+                       users[i].lastCountry = users[i].lastCountry.toUpperCase();
+                   }else if(data.location[0].address.country){
+                       users[i].lastCountry = data.location[0].address.country;
+                   }
+                   if(data.location[0].address.city){
+                       users[i].lastCity = data.location[0].address.city;
+                   }else if(data.location[0].address.town){
+                       users[i].lastCity = data.location[0].address.town;
+                   }else if(data.location[0].address.county){
+                       users[i].lastCity = data.location[0].address.county;
+                   }
+               })
+                   .catch(err => console.log("Could not interpret IP Address!"));
 
-    }catch(e){
-        console.log("Could not interpret IP Address!");
+           }catch(e){
+               console.log("Could not interpret IP Address!");
+           }
+       }
     }
+
     console.log(users);
 
 
     socket.on("disconnect", () => {
         console.info(`Socket ${socket.id} has disconnected.`);
-        users.splice(userNumber, 1);
+        users.forEach((user, i) => {
+            if(user.socketId == socket.id){
+                users.splice(i, 1);
+            }
+        });
         console.log(users);
     });
 
@@ -247,10 +251,15 @@ async function onNewWebsocketConnection(socket) {
             let time = new Date();
             let country = "DE";
             let city = "Bielefeld";
-            if(users[userNumber].lastCity !== "new"){
-                city = users[userNumber].lastCity;
-                country = users[userNumber].lastCountry;
-            }
+            users.forEach((user, i) => {
+                if(user.socketId == socket.id){
+                    if(users[i].lastCity !== "new"){
+                        city = users[i].lastCity;
+                        country = users[i].lastCountry;
+                    }
+                }
+            });
+
 
             let interpretation = await interpretMessage(data.message);
             console.log(JSON.stringify(await interpretation));
@@ -277,16 +286,20 @@ async function onNewWebsocketConnection(socket) {
                         message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
                             ' ' + weatherString
                     });
-                    users[userNumber].lastMessage = data.message;
-                    users[userNumber].lastCity = city;
-                    users[userNumber].lastCountry = country;
+                    users.forEach((user, i) => {
+                        if(user.socketId == socket.id){
+                            users[i].lastMessage = data.message;
+                            users[i].lastCity = city;
+                            users[i].lastCountry = country;
+                        }
+                    });
                 }catch(e){
                     socket.emit("chat", {
                         message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal'
                     });
                 }
             }else{
-                let answer = await answerMessage(userNumber, data.message);
+                let answer = await answerMessage(socket.id, data.message);
 
                 console.log(JSON.stringify(await answer));
                 socket.emit("writing", {
@@ -302,8 +315,11 @@ async function onNewWebsocketConnection(socket) {
                     });
                 }
 
-                users[userNumber].lastMessage = data.message;
-
+                users.forEach((user, i) => {
+                    if(user.socketId == socket.id){
+                        users[i].lastMessage = data.message;
+                    }
+                });
             }
         }catch(e){
             socket.emit("writing", {
