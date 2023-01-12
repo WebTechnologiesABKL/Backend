@@ -285,7 +285,8 @@ async function onNewWebsocketConnection(socket) {
 
                     socket.emit("chat", {
                         message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
-                            ' ' + weatherString
+                            ' ' + weatherString,
+                        weather: weather
                     });
                     users.forEach((user, i) => {
                         if(user.socketId == socket.id){
@@ -297,7 +298,8 @@ async function onNewWebsocketConnection(socket) {
                     });
                 }catch(e){
                     socket.emit("chat", {
-                        message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal'
+                        message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal',
+                        weather: null
                     });
                 }
             }else{
@@ -309,11 +311,13 @@ async function onNewWebsocketConnection(socket) {
                 });
                 if(await answer.length > 0){
                     socket.emit("chat", {
-                        message: await answer[0].text
+                        message: await answer[0].text,
+                        weather: null
                     });
                 }else{
                     socket.emit("chat", {
-                        message: "Ich habe Probleme deine Anfrage zu beantworten..."
+                        message: "Ich habe Probleme deine Anfrage zu beantworten...",
+                        weather: null
                     });
                 }
 
@@ -328,7 +332,8 @@ async function onNewWebsocketConnection(socket) {
                 active: false
             });
             socket.emit("chat", {
-                message: "Ich habe Probleme deine Anfrage zu beantworten..."
+                message: "Ich habe Probleme deine Anfrage zu beantworten...",
+                weather: null
             });
         }
 
