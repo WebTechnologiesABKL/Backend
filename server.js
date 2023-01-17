@@ -46,7 +46,7 @@ function convertDateToString(date){
     if(date.getMonth() < 9){
         dateString += ".0" + (date.getMonth() + 1);
     }else{
-        dateString += (date.getMonth() + 1);
+        dateString += "." + (date.getMonth() + 1);
     }
     dateString += "." + date.getFullYear();
 
@@ -227,6 +227,10 @@ async function onNewWebsocketConnection(socket) {
 
     console.log(users);
 
+    // will send a message only to this socket (different than using `io.emit()`, which would broadcast it)
+    socket.emit("welcome", {
+        message: "Wilkommen beim Wetter Chatbot, fragen Sie mich etwas 🌞"
+    });
 
     socket.on("disconnect", () => {
         console.info(`Socket ${socket.id} has disconnected.`);
@@ -338,11 +342,6 @@ async function onNewWebsocketConnection(socket) {
         }
 
 
-    });
-
-    // will send a message only to this socket (different than using `io.emit()`, which would broadcast it)
-    socket.emit("welcome", {
-        message: "Wilkommen beim Wetter Chatbot, fragen Sie mich etwas 🌞"
     });
 }
 
