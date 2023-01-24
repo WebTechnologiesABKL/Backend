@@ -68,17 +68,38 @@ function convertDateToString(date){
 function convertWeatherToString(weather){
     let icon = weather.weather.weather[0].icon;
     switch (icon) {
-        case "cloudy":
-            icon = "bewölkt";
-            break;
-        case "sunny":
-            icon = "sonnig";
-            break;
-        case "rain":
-            icon = "regnerisch";
+        case "clear-day":
+            icon = "sonnig"
             break;
         case "partly-cloudy-day":
-            icon = "teilweise bewölkt";
+            icon = "teilweise bewölkt"
+            break;
+        case "partly-cloudy-night":
+            icon = "teilweise bewölkt"
+            break;
+        case "clear-night":
+            icon = "bewölkt"
+            break;
+        case "cloudy":
+            icon = "bewölkt"
+            break;
+        case "sunny":
+            icon = "sonnig"
+            break;
+        case "wind":
+            icon = "windig"
+            break;
+        case "fog":
+            icon = "nebelig"
+            break;
+        case "rain":
+            icon = "regnerisch"
+            break;
+        case "snow":
+            icon = "schneeig"
+            break;
+        case "thunderstorm":
+            icon = "gewitterig"
             break;
     }
     let weatherString = icon + ' bei ' + weather.weather.weather[0].temperature + '°C.';
@@ -290,7 +311,8 @@ async function onNewWebsocketConnection(socket) {
                     socket.emit("chat", {
                         message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
                             ' ' + weatherString,
-                        weather: weather
+                        weather: weather,
+                        time: time
                     });
                     users.forEach((user, i) => {
                         if(user.socketId == socket.id){
