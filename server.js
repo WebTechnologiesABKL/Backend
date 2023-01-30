@@ -341,10 +341,10 @@ async function onNewWebsocketConnection(socket) {
                     });
                     if(await finished){
                         socket.emit("writing", {
-                            active: true
+                            active: false
                         });
                         socket.emit("forecast", {
-                            weather: finished
+                            forecast: finished
                         });
                     }else{
                         socket.emit("writing", {
