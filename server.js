@@ -101,6 +101,9 @@ function convertWeatherToString(weather){
         case "thunderstorm":
             icon = "gewitterig"
             break;
+        case "sleet":
+            icon = "schneeregen"
+            break;
     }
     let weatherString = icon + ' bei ' + weather.weather.weather[0].temperature + '°C.';
 
@@ -289,7 +292,7 @@ async function onNewWebsocketConnection(socket) {
 
             let interpretation = await interpretMessage(data.message);
             console.log(JSON.stringify(await interpretation));
-            if(await interpretation.entities.length > 0 || await interpretation.intent.name == "weather"){
+            if((await interpretation.entities.length > 0 && (await interpretation.entities[0].entity === "LOC" || await interpretation.entities[0].entity === "time")) || await interpretation.intent.name == "weather"){
                 await interpretation.entities.forEach(entity => {
                     if(entity.entity === "LOC"){
                         city = entity.value;
@@ -322,6 +325,34 @@ async function onNewWebsocketConnection(socket) {
                             users[i].lastTime = time;
                         }
                     });
+                    socket.emit("writing", {
+                        active: true
+                    });
+                    let finished = new Promise(async (resolve) => {
+                        let forecast = [weather];
+                        for (let i = 1; i < 7; i++) {
+                            time = time.addHours(24);
+                            if(i === 6){
+                                resolve(forecast.push(await getWeather(time, city, country)));
+                            }else{
+                                forecast.push(await getWeather(time, city, country));
+                            }
+                        }
+                    });
+                    if(await finished){
+                        socket.emit("writing", {
+                            active: true
+                        });
+                        socket.emit("forecast", {
+                            weather: finished
+                        });
+                    }else{
+                        socket.emit("writing", {
+                            active: false
+                        });
+                    }
+
+
                 }catch(e){
                     socket.emit("chat", {
                         message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal',
@@ -336,10 +367,19 @@ async function onNewWebsocketConnection(socket) {
                     active: false
                 });
                 if(await answer.length > 0){
-                    socket.emit("chat", {
-                        message: await answer[0].text,
-                        weather: null
-                    });
+                    await answer.forEach(a => {
+                        if(a.text){
+                            socket.emit("chat", {
+                                message: a.text,
+                                weather: null
+                            });
+                        }else if(a.image){
+                            socket.emit("image", {
+                                image: a.image,
+                                weather: null
+                            });
+                        }
+                    })
                 }else{
                     socket.emit("chat", {
                         message: "Ich habe Probleme deine Anfrage zu beantworten...",
