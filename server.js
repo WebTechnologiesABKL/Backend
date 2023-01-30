@@ -349,10 +349,12 @@ async function onNewWebsocketConnection(socket) {
                         let forecast = [weather];
                         for (let i = 1; i < 7; i++) {
                             time = time.addHours(24);
-                            if(i === 6){
-                                resolve(forecast.push(await getWeather(time, city, country)));
+                            let weatherI = await getWeather(time, city, country);
+                            if(i === 6 && await weatherI){
+                                forecast.push(await weatherI);
+                                resolve(forecast);
                             }else{
-                                forecast.push(await getWeather(time, city, country));
+                                forecast.push(await weatherI);
                             }
                         }
                     });
