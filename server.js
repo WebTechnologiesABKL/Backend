@@ -317,7 +317,7 @@ async function onNewWebsocketConnection(socket) {
                         if(entity.value.from){
                             time = new Date(((new Date(entity.value.from)).getTime() + (new Date(entity.value.to)).getTime()) / 2);
                         }else{
-                            time = (new Date(entity.value)).addHours(12);
+                            time = (new Date(entity.value)).addHours(6);
                         }
                     }
                 });
