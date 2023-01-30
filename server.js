@@ -127,7 +127,7 @@ async function getWeather(time, city, country){
             });
 
         }).on("error", (err) => {
-            console.log("Error: " + err.message);
+            console.error("Error: " + err.message);
             resolve({
                 error: err.message
             })
@@ -161,7 +161,7 @@ async function interpretMessage(text){
                 })
             })
             .on('error', err => {
-                console.log("Error: " + err.message);
+                console.error("Error: " + err.message);
                 resolve({
                     error: err.message
                 })
@@ -200,7 +200,7 @@ async function answerMessage(userID, text){
                 })
             })
             .on('error', err => {
-                console.log("Error: " + err.message);
+                console.error("Error: " + err.message);
                 resolve({
                     error: err.message
                 })
@@ -226,7 +226,10 @@ async function onNewWebsocketConnection(socket) {
        if(user.socketId == socket.id){
            try{
                await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
+                   console.log("----------------------------------------");
+                   console.log("IP-Data:");
                    console.log(JSON.stringify(data));
+                   console.log("----------------------------------------");
                    if(data.location[0].address.country_code){
                        users[i].lastCountry = data.location[0].address.country_code;
                        users[i].lastCountry = users[i].lastCountry.toUpperCase();
@@ -241,15 +244,23 @@ async function onNewWebsocketConnection(socket) {
                        users[i].lastCity = data.location[0].address.county;
                    }
                })
-                   .catch(err => console.log("Could not interpret IP Address!"));
+                   .catch(err => {
+                       console.log("----------------------------------------");
+                       console.log("Could not interpret IP Address!")
+                       console.log("----------------------------------------");
+                   });
 
            }catch(e){
+               console.log("----------------------------------------");
                console.log("Could not interpret IP Address!");
+               console.log("----------------------------------------");
            }
        }
     }
-
+    console.log("----------------------------------------");
+    console.log("Users:");
     console.log(users);
+    console.log("----------------------------------------");
 
     // will send a message only to this socket (different than using `io.emit()`, which would broadcast it)
     socket.emit("welcome", {
@@ -263,7 +274,10 @@ async function onNewWebsocketConnection(socket) {
                 users.splice(i, 1);
             }
         });
+        console.log("----------------------------------------");
+        console.log("Users:");
         console.log(users);
+        console.log("----------------------------------------");
     });
 
     // echoes on the terminal every "hello" message this socket sends
@@ -291,7 +305,10 @@ async function onNewWebsocketConnection(socket) {
 
 
             let interpretation = await interpretMessage(data.message);
+            console.log("----------------------------------------");
+            console.log("interpretation:");
             console.log(JSON.stringify(await interpretation));
+            console.log("----------------------------------------");
             if((await interpretation.entities.length > 0 && (await interpretation.entities[0].entity === "LOC" || await interpretation.entities[0].entity === "time")) || await interpretation.intent.name == "weather"){
                 await interpretation.entities.forEach(entity => {
                     if(entity.entity === "LOC"){
@@ -340,11 +357,15 @@ async function onNewWebsocketConnection(socket) {
                         }
                     });
                     if(await finished){
+                        console.log("----------------------------------------");
+                        console.log("forecast:");
+                        console.log(await finished);
+                        console.log("----------------------------------------");
                         socket.emit("writing", {
                             active: false
                         });
                         socket.emit("forecast", {
-                            forecast: finished
+                            forecast: await finished
                         });
                     }else{
                         socket.emit("writing", {
@@ -361,8 +382,10 @@ async function onNewWebsocketConnection(socket) {
                 }
             }else{
                 let answer = await answerMessage(socket.id, data.message);
-
+                console.log("----------------------------------------");
+                console.log("answer:");
                 console.log(JSON.stringify(await answer));
+                console.log("----------------------------------------");
                 socket.emit("writing", {
                     active: false
                 });
