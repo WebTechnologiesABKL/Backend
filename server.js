@@ -341,8 +341,10 @@ async function onNewWebsocketConnection(socket) {
                         if(entity.value.from){
                             time = new Date(((new Date(entity.value.from)).getTime() + (new Date(entity.value.to)).getTime()) / 2);
                         }else{
-                            if(new Date(entity.value).getHours() <=1){
+                            if(new Date(entity.value).getHours() <= 2){
                                 time = (new Date(entity.value)).addHours(6);
+                            }else{
+                                time = (new Date(entity.value))
                             }
                         }
                     }
