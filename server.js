@@ -111,9 +111,33 @@ function convertWeatherToString(weather){
 
     return weatherString;
 }
-async function getWeather(time, city, country){
+async function getWeather(time, lat, lon){
     return new Promise(resolve => {
-        http.get('http://weather:8090/weather?city=' + city + '&country=' + country + '&time=' + time, (resp) => {
+        http.get('http://weather:8090/weather?lat=' + lat + '&lon=' + lon + '&time=' + time, (resp) => {
+            let data = '';
+
+            // A chunk of data has been received.
+            resp.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            // The whole response has been received. Print out the result.
+            resp.on('end', () => {
+                resolve(JSON.parse(data));
+            });
+
+        }).on("error", (err) => {
+            console.error("Error: " + err.message);
+            resolve({
+                error: err.message
+            })
+        });
+    });
+}
+
+async function getCoordinates(city, country){
+    return new Promise(resolve => {
+        http.get('http://weather:8090/coordinates?city=' + city + '&country=' + country, (resp) => {
             let data = '';
 
             // A chunk of data has been received.
@@ -323,7 +347,11 @@ async function onNewWebsocketConnection(socket) {
                         }
                     }
                 });
-                let weather = await getWeather(time, city, country);
+                let coordinates = await getCoordinates(city, country);
+                if(!await coordinates.lon && !await coordinates.lat){
+                    throw new Error("Error getting Coordinates from City & Country");
+                }
+                let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
                 socket.emit("writing", {
                     active: false
                 });
