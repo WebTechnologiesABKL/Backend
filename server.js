@@ -290,7 +290,7 @@ async function onNewWebsocketConnection(socket) {
         });
 
         try{
-            let time = new Date();
+            let time = new Date().addHours(1);
             let country = "DE";
             let city = "Bielefeld";
             users.forEach((user, i) => {
@@ -317,7 +317,9 @@ async function onNewWebsocketConnection(socket) {
                         if(entity.value.from){
                             time = new Date(((new Date(entity.value.from)).getTime() + (new Date(entity.value.to)).getTime()) / 2);
                         }else{
-                            time = (new Date(entity.value)).addHours(6);
+                            if(new Date(entity.value).getHours() <=1){
+                                time = (new Date(entity.value)).addHours(6);
+                            }
                         }
                     }
                 });
