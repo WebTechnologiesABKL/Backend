@@ -364,7 +364,9 @@ async function onNewWebsocketConnection(socket) {
                         message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
                             ' ' + weatherString,
                         weather: weather,
-                        time: time
+                        time: time,
+                        city: city,
+                        country: country
                     });
                     users.forEach((user, i) => {
                         if(user.socketId == socket.id){
@@ -399,7 +401,9 @@ async function onNewWebsocketConnection(socket) {
                             active: false
                         });
                         socket.emit("forecast", {
-                            forecast: await finished
+                            forecast: await finished,
+                            city: city,
+                            country: country
                         });
                     }else{
                         socket.emit("writing", {
