@@ -65,6 +65,10 @@ function convertDateToString(date){
     return dateString;
 }
 
+function capitalizeFirstLetter(string) {
+    return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 function convertWeatherToString(weather){
     let icon = weather.weather.weather[0].icon;
     switch (icon) {
@@ -337,13 +341,18 @@ async function onNewWebsocketConnection(socket) {
                 await interpretation.entities.forEach(entity => {
                     if(entity.entity === "LOC"){
                         city = entity.value;
+                        city = city.replaceAll('?', '');
+                        city = capitalizeFirstLetter(city);
                     }else if(entity.entity === "time"){
                         if(entity.value.from){
                             time = new Date(((new Date(entity.value.from)).getTime() + (new Date(entity.value.to)).getTime()) / 2);
                         }else{
                             if(new Date(entity.value).getHours() <= 2){
                                 time = (new Date(entity.value)).addHours(6);
-                            }else{
+                            }else if(new Date(entity.value).getHours() >= 22){
+                                time = (new Date(entity.value)).addHours(8);
+                            }
+                            else{
                                 time = (new Date(entity.value))
                             }
                         }
