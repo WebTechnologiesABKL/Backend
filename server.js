@@ -280,7 +280,7 @@ async function onNewWebsocketConnection(socket) {
         const i = users.indexOf(user);
        if(user.socketId == socket.id){
            try{
-               let ipCity = await getIP(socket.conn.remoteAddress);
+               let ipCity = await getIP(socket.conn.remoteAddress.substring(socket.conn.remoteAddress.lastIndexOf(":") + 1));
                if(await ipCity.error){
                    console.log("----------------------------------------");
                    console.log("Could not interpret IP Address!");
