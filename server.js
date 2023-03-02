@@ -270,7 +270,7 @@ async function onNewWebsocketConnection(socket) {
     console.info(`Socket ${socket.id} has connected.`);
     users.push({
         socketId: socket.id,
-        ipAddress: socket.conn.remoteAddress,
+        ipAddress: socket.conn.remoteAddress.substring(socket.conn.remoteAddress.lastIndexOf(":") + 1),
         lastMessage: "",
         lastCity: "new",
         lastCountry: "DE",
@@ -280,7 +280,7 @@ async function onNewWebsocketConnection(socket) {
         const i = users.indexOf(user);
        if(user.socketId == socket.id){
            try{
-               let ipCity = await getIP(socket.conn.remoteAddress.substring(socket.conn.remoteAddress.lastIndexOf(":") + 1));
+               let ipCity = await getIP(user.ipAddress);
                if(await ipCity.error){
                    console.log("----------------------------------------");
                    console.log("Could not interpret IP Address!");
