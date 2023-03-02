@@ -393,7 +393,7 @@ async function onNewWebsocketConnection(socket) {
                 try{
                     let weatherString = convertWeatherToString(weather);
                     let oldTime = time;
-                    time = time - (time.getHours() - 1) *  3600000
+                    time = time - ((time.getHours() - 1) *  3600000)
                     let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
                     setTimeout(async () => {
                         socket.emit("writing", {
@@ -454,7 +454,7 @@ async function onNewWebsocketConnection(socket) {
                     }, 1000);
                 }catch(e){
                     socket.emit("chat", {
-                        message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal',
+                        message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es noch einmal.',
                         weather: null
                     });
                 }
