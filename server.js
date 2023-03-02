@@ -405,6 +405,7 @@ async function onNewWebsocketConnection(socket) {
                                 message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(oldTime) +
                                     ' ' + weatherString,
                                 weather: await fullWeather,
+                                videoWeather: await weather,
                                 time: oldTime,
                                 city: city,
                                 country: country
