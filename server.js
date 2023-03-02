@@ -393,7 +393,7 @@ async function onNewWebsocketConnection(socket) {
                 try{
                     if(await weather){
                         let weatherString = convertWeatherToString(await weather);
-                        let oldTime = time;
+                        let oldTime = new Date(time);
                         time.setHours(1,0,0,0);
                         console.log(oldTime, time);
                         let fullWeather = await getWeather(time, await coordinates.lat, await coordinates.lon);
