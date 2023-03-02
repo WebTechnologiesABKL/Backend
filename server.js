@@ -380,6 +380,7 @@ async function onNewWebsocketConnection(socket) {
                 let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
                 try{
                     let weatherString = convertWeatherToString(weather);
+                    let oldTime = time;
                     time = time - (time.getHours() - 1) *  3600000
                     let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
                     setTimeout(async () => {
@@ -392,7 +393,8 @@ async function onNewWebsocketConnection(socket) {
                             weather: await weather,
                             time: time,
                             city: city,
-                            country: country
+                            country: country,
+                            time: oldTime
                         });
                         socket.emit("writing", {
                             active: true
