@@ -378,64 +378,67 @@ async function onNewWebsocketConnection(socket) {
                     throw new Error("Error getting Coordinates from City & Country");
                 }
                 let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
-                socket.emit("writing", {
-                    active: false
-                });
                 try{
                     let weatherString = convertWeatherToString(weather);
-
-                    socket.emit("chat", {
-                        message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
-                            ' ' + weatherString,
-                        weather: weather,
-                        time: time,
-                        city: city,
-                        country: country
-                    });
-                    users.forEach((user, i) => {
-                        if(user.socketId == socket.id){
-                            users[i].lastMessage = data.message;
-                            users[i].lastCity = city;
-                            users[i].lastCountry = country;
-                            users[i].lastTime = time;
-                        }
-                    });
-                    socket.emit("writing", {
-                        active: true
-                    });
-                    let finished = new Promise(async (resolve) => {
-                        let forecast = [weather];
-                        for (let i = 1; i < 7; i++) {
-                            time = time.addHours(24);
-                            let weatherI = await getWeather(time, await coordinates.lat, await coordinates.lon);
-                            if(i === 6 && await weatherI){
-                                forecast.push(await weatherI);
-                                resolve(forecast);
-                            }else{
-                                forecast.push(await weatherI);
-                            }
-                        }
-                    });
-                    if(await finished){
-                        console.log("----------------------------------------");
-                        console.log("forecast:");
-                        console.log(await finished);
-                        console.log("----------------------------------------");
+                    time = time - (time.getHours() - 1) *  3600000
+                    let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
+                    setTimeout(async () => {
                         socket.emit("writing", {
                             active: false
                         });
-                        socket.emit("forecast", {
-                            forecast: await finished,
+                        socket.emit("chat", {
+                            message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
+                                ' ' + weatherString,
+                            weather: await weather,
+                            time: time,
                             city: city,
                             country: country
                         });
-                    }else{
                         socket.emit("writing", {
-                            active: false
+                            active: true
                         });
-                    }
-
-
+                        users.forEach((user, i) => {
+                            if(user.socketId == socket.id){
+                                users[i].lastMessage = data.message;
+                                users[i].lastCity = city;
+                                users[i].lastCountry = country;
+                                users[i].lastTime = time;
+                            }
+                        });
+                        let finished = new Promise(async (resolve) => {
+                            let forecast = [weather];
+                            for (let i = 1; i < 7; i++) {
+                                time = time.addHours(24);
+                                let weatherI = await getWeather(time, await coordinates.lat, await coordinates.lon);
+                                if(i === 6 && await weatherI){
+                                    forecast.push(await weatherI);
+                                    resolve(forecast);
+                                }else{
+                                    forecast.push(await weatherI);
+                                }
+                            }
+                        });
+                        if(await finished){
+                            console.log("----------------------------------------");
+                            console.log("forecast:");
+                            console.log(await finished);
+                            console.log("----------------------------------------");
+                            setTimeout(async () => {
+                                socket.emit("writing", {
+                                    active: false
+                                });
+                                socket.emit("forecast", {
+                                    forecast: await finished,
+                                    city: city,
+                                    country: country
+                                });
+                            }, 2000);
+                        }else{
+                            socket.emit("writing", {
+                                active: false
+                            });
+                        }
+                    }, 1000);
                 }catch(e){
                     socket.emit("chat", {
                         message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es nocheinmal',
