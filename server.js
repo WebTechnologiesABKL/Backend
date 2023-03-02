@@ -396,7 +396,6 @@ async function onNewWebsocketConnection(socket) {
                     time.setHours(1,0,0,0);
                     console.log(oldTime, time);
                     let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
-                    setTimeout(async () => {
                         socket.emit("writing", {
                             active: false
                         });
@@ -437,7 +436,6 @@ async function onNewWebsocketConnection(socket) {
                             console.log("forecast:");
                             console.log(await finished);
                             console.log("----------------------------------------");
-                            setTimeout(async () => {
                                 socket.emit("writing", {
                                     active: false
                                 });
@@ -446,13 +444,11 @@ async function onNewWebsocketConnection(socket) {
                                     city: city,
                                     country: country
                                 });
-                            }, 2000);
                         }else{
                             socket.emit("writing", {
                                 active: false
                             });
                         }
-                    }, 1000);
                 }catch(e){
                     socket.emit("chat", {
                         message: 'Ich habe Probleme die Wetterdaten abzurufen, bitte versuche es noch einmal.',
