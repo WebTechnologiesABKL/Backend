@@ -391,68 +391,70 @@ async function onNewWebsocketConnection(socket) {
                 }
                 let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
                 try{
-                    let weatherString = convertWeatherToString(await weather);
-                    let oldTime = time;
-                    time.setHours(1,0,0,0);
-                    console.log(oldTime, time);
-                    let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
-                    setTimeout(async () => {
-                        socket.emit("writing", {
-                            active: false
-                        });
-                        socket.emit("chat", {
-                            message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
-                                ' ' + weatherString,
-                            weather: await weather,
-                            time: oldTime,
-                            city: city,
-                            country: country
-                        });
-                        socket.emit("writing", {
-                            active: true
-                        });
-                        users.forEach((user, i) => {
-                            if(user.socketId == socket.id){
-                                users[i].lastMessage = data.message;
-                                users[i].lastCity = city;
-                                users[i].lastCountry = country;
-                                users[i].lastTime = time;
-                            }
-                        });
-                        let finished = new Promise(async (resolve) => {
-                            let forecast = [weather];
-                            for (let i = 1; i < 7; i++) {
-                                time = time.addHours(24);
-                                let weatherI = await getWeather(time, await coordinates.lat, await coordinates.lon);
-                                if(i === 6 && await weatherI){
-                                    forecast.push(await weatherI);
-                                    resolve(forecast);
-                                }else{
-                                    forecast.push(await weatherI);
-                                }
-                            }
-                        });
-                        if(await finished){
-                            console.log("------------------------------------------------------------------------");
-                            console.log("forecast:");
-                            console.log(await finished);
-                            console.log("------------------------------------------------------------------------");
-                            setTimeout(async () => {
-                                socket.emit("writing", {
-                                    active: false
-                                });
-                                socket.emit("forecast", {
-                                    forecast: await finished,
-                                    city: city,
-                                    country: country
-                                });
-                            }, 2000);
-                        }else{
+                    if(await weather){
+                        let weatherString = convertWeatherToString(await weather);
+                        let oldTime = time;
+                        time.setHours(1,0,0,0);
+                        console.log(oldTime, time);
+                        let fullWeather = await getWeather(time, await coordinates.lat, await coordinates.lon);
+                        setTimeout(async () => {
                             socket.emit("writing", {
                                 active: false
                             });
-                        }
-                    }, 1000);
+                            socket.emit("chat", {
+                                message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
+                                    ' ' + weatherString,
+                                weather: await fullWeather,
+                                time: oldTime,
+                                city: city,
+                                country: country
+                            });
+                            socket.emit("writing", {
+                                active: true
+                            });
+                            users.forEach((user, i) => {
+                                if(user.socketId == socket.id){
+                                    users[i].lastMessage = data.message;
+                                    users[i].lastCity = city;
+                                    users[i].lastCountry = country;
+                                    users[i].lastTime = time;
+                                }
+                            });
+                            let finished = new Promise(async (resolve) => {
+                                let forecast = [fullWeather];
+                                for (let i = 1; i < 7; i++) {
+                                    time = time.addHours(24);
+                                    let weatherI = await getWeather(time, await coordinates.lat, await coordinates.lon);
+                                    if(i === 6 && await weatherI){
+                                        forecast.push(await weatherI);
+                                        resolve(forecast);
+                                    }else{
+                                        forecast.push(await weatherI);
+                                    }
+                                }
+                            });
+                            if(await finished){
+                                console.log("------------------------------------------------------------------------");
+                                console.log("forecast:");
+                                console.log(await finished);
+                                console.log("------------------------------------------------------------------------");
+                                setTimeout(async () => {
+                                    socket.emit("writing", {
+                                        active: false
+                                    });
+                                    socket.emit("forecast", {
+                                        forecast: await finished,
+                                        city: city,
+                                        country: country
+                                    });
+                                }, 2000);
+                            }else{
+                                socket.emit("writing", {
+                                    active: false
+                                });
+                            }
+                        }, 1000);
+                    }
                 }catch(e){
                     console.error("Unknown Error occurred:");
                     console.error(e);
