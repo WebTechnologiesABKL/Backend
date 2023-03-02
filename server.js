@@ -291,8 +291,17 @@ async function onNewWebsocketConnection(socket) {
                    console.log("----------------------------------------");
                    console.log("IP-Data:");
                    console.log(JSON.stringify(await ipCity));
-                   users[i].lastCountry = await ipCity.country;
-                   users[i].lastCity = await ipCity.city;
+                   if(await ipCity.city){
+                       users[i].lastCity = await ipCity.city;
+                   }else{
+                       users[i].lastCity = "Bielefeld";
+                   }
+                   if(await ipCity.country){
+                       users[i].lastCountry = await ipCity.country;
+                   }else{
+                       users[i].lastCity = "DE";
+                   }
+
                    console.log("----------------------------------------");
                }
            }catch(e){
@@ -331,7 +340,6 @@ async function onNewWebsocketConnection(socket) {
     socket.on("chat", async function(data){
         console.info(`Socket ${socket.id} has sent information:`);
         console.info(data);
-
         socket.emit("writing", {
            active: true
         });
