@@ -139,6 +139,34 @@ async function getWeather(time, lat, lon){
     });
 }
 
+async function getIP(ip){
+    return new Promise(resolve => {
+        http.get('http://weather:8090/ip?ip=' + ip, (resp) => {
+            let data = '';
+
+            // A chunk of data has been received.
+            resp.on('data', (chunk) => {
+                data += chunk;
+            });
+
+            // The whole response has been received. Print out the result.
+            resp.on('end', () => {
+                let result = JSON.parse(data);
+                resolve({
+                    city: data.city,
+                    country: data.country
+                });
+            });
+
+        }).on("error", (err) => {
+            console.error("Error: " + err.message);
+            resolve({
+                error: err.message
+            })
+        });
+    });
+}
+
 async function getCoordinates(city, country){
     return new Promise(resolve => {
         http.get('http://weather:8090/coordinates?city=' + city + '&country=' + country, (resp) => {
@@ -253,31 +281,19 @@ async function onNewWebsocketConnection(socket) {
         const i = users.indexOf(user);
        if(user.socketId == socket.id){
            try{
-               await ipInfo.getIPInfo.location(socket.conn.remoteAddress).then(data => {
+               let ipCity = await getIP(socket.conn.remoteAddress);
+               if(await ipCity.error){
+                   console.log("----------------------------------------");
+                   console.log("Could not interpret IP Address!")
+                   console.log("----------------------------------------");
+               }else{
                    console.log("----------------------------------------");
                    console.log("IP-Data:");
-                   console.log(JSON.stringify(data));
+                   console.log(JSON.stringify(await ipCity));
+                   users[i].lastCountry = await ipCity.country;
+                   users[i].lastCity = await ipCity.city;
                    console.log("----------------------------------------");
-                   if(data.location[0].address.country_code){
-                       users[i].lastCountry = data.location[0].address.country_code;
-                       users[i].lastCountry = users[i].lastCountry.toUpperCase();
-                   }else if(data.location[0].address.country){
-                       users[i].lastCountry = data.location[0].address.country;
-                   }
-                   if(data.location[0].address.city){
-                       users[i].lastCity = data.location[0].address.city;
-                   }else if(data.location[0].address.town){
-                       users[i].lastCity = data.location[0].address.town;
-                   }else if(data.location[0].address.county){
-                       users[i].lastCity = data.location[0].address.county;
-                   }
-               })
-                   .catch(err => {
-                       console.log("----------------------------------------");
-                       console.log("Could not interpret IP Address!")
-                       console.log("----------------------------------------");
-                   });
-
+               }
            }catch(e){
                console.log("----------------------------------------");
                console.log("Could not interpret IP Address!");
