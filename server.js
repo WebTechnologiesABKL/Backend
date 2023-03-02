@@ -391,10 +391,9 @@ async function onNewWebsocketConnection(socket) {
                             message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
                                 ' ' + weatherString,
                             weather: await weather,
-                            time: time,
+                            time: oldTime,
                             city: city,
-                            country: country,
-                            time: oldTime
+                            country: country
                         });
                         socket.emit("writing", {
                             active: true
