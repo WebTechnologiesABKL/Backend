@@ -283,7 +283,9 @@ async function onNewWebsocketConnection(socket) {
                let ipCity = await getIP(socket.conn.remoteAddress);
                if(await ipCity.error){
                    console.log("----------------------------------------");
-                   console.log("Could not interpret IP Address!")
+                   console.log("Could not interpret IP Address!");
+                   users[i].lastCountry = "DE";
+                   users[i].lastCity = "Bielefeld";
                    console.log("----------------------------------------");
                }else{
                    console.log("----------------------------------------");
@@ -296,6 +298,8 @@ async function onNewWebsocketConnection(socket) {
            }catch(e){
                console.log("----------------------------------------");
                console.log("Could not interpret IP Address!");
+               users[i].lastCountry = "DE";
+               users[i].lastCity = "Bielefeld";
                console.log("----------------------------------------");
            }
        }
