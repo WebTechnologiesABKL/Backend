@@ -402,7 +402,7 @@ async function onNewWebsocketConnection(socket) {
                                 active: false
                             });
                             socket.emit("chat", {
-                                message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(time) +
+                                message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(oldTime) +
                                     ' ' + weatherString,
                                 weather: await fullWeather,
                                 time: oldTime,
