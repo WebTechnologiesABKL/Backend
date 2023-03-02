@@ -393,7 +393,7 @@ async function onNewWebsocketConnection(socket) {
                 try{
                     let weatherString = convertWeatherToString(await weather);
                     let oldTime = time;
-                    time = time - ((time.getHours() - 1) *  3600000);
+                    time.setHours(1,0,0,0);
                     console.log(oldTime, time);
                     let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
                     setTimeout(async () => {
