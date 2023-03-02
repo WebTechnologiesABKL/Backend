@@ -152,8 +152,8 @@ async function getIP(ip){
             resp.on('end', () => {
                 let result = JSON.parse(data);
                 resolve({
-                    city: data.city,
-                    country: data.country
+                    city: result.city,
+                    country: result.country
                 });
             });
 
@@ -391,9 +391,10 @@ async function onNewWebsocketConnection(socket) {
                 }
                 let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
                 try{
-                    let weatherString = convertWeatherToString(weather);
+                    let weatherString = convertWeatherToString(await weather);
                     let oldTime = time;
-                    time = time - ((time.getHours() - 1) *  3600000)
+                    time = time - ((time.getHours() - 1) *  3600000);
+                    console.log(oldTime, time);
                     let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
                     setTimeout(async () => {
                         socket.emit("writing", {
