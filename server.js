@@ -1,7 +1,6 @@
 const http = require("http");
 const express = require("express");
 const socketIo = require("socket.io");
-const ipInfo = require("ip-info-finder");
 
 
 const SERVER_PORT = 8085;
