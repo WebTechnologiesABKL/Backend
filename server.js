@@ -299,7 +299,7 @@ async function onNewWebsocketConnection(socket) {
                    if(await ipCity.country){
                        users[i].lastCountry = await ipCity.country;
                    }else{
-                       users[i].lastCity = "DE";
+                       users[i].lastCountry = "DE";
                    }
 
                    console.log("----------------------------------------");
