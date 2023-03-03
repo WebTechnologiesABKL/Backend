@@ -379,6 +379,10 @@ async function onNewWebsocketConnection(socket) {
                         city = entity.value;
                         city = city.replaceAll('?', '');
                         city = capitalizeFirstLetter(city);
+                    }else if (entity.entity === "city") {
+                        city = entity.value;
+                        city = city.replaceAll('?', '');
+                        city = capitalizeFirstLetter(city);
                     } else if (entity.entity === "time") {
                         if (entity.value.from) {
                             time = new Date(((new Date(entity.value.from)).getTime() + (new Date(entity.value.to)).getTime()) / 2);
