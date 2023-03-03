@@ -7,11 +7,13 @@ const SERVER_PORT = 8085;
 
 const users = [];
 
+//Yannick Bruns
 Date.prototype.addHours = function(h) {
     this.setTime(this.getTime() + (h*60*60*1000));
     return this;
 }
 
+//Yannick Bruns, Sarah Koch
 function convertDateToString(date){
     let dateString = "";
     switch (date.getDay()) {
@@ -64,10 +66,12 @@ function convertDateToString(date){
     return dateString;
 }
 
+//Sarah Koch
 function capitalizeFirstLetter(string) {
     return string.charAt(0).toUpperCase() + string.slice(1);
 }
 
+//Yannick Bruns, Sarah Koch
 function convertWeatherToString(weather){
     let icon = weather.weather.weather[0].icon;
     switch (icon) {
@@ -105,7 +109,7 @@ function convertWeatherToString(weather){
             icon = "gewitterig"
             break;
         case "sleet":
-            icon = "schneeregen"
+            icon = "schneeregnerisch"
             break;
     }
     let weatherString = icon + ' bei ' + weather.weather.weather[0].temperature + '°C.';
@@ -114,6 +118,8 @@ function convertWeatherToString(weather){
 
     return weatherString;
 }
+
+//Yannick Bruns
 async function getWeather(time, lat, lon){
     return new Promise(resolve => {
         http.get('http://weather:8090/weather?lat=' + lat + '&lon=' + lon + '&time=' + time, (resp) => {
@@ -138,6 +144,7 @@ async function getWeather(time, lat, lon){
     });
 }
 
+//Yannick Bruns
 async function getIP(ip){
     return new Promise(resolve => {
         http.get('http://weather:8090/ip?ip=' + ip, (resp) => {
@@ -166,6 +173,7 @@ async function getIP(ip){
     });
 }
 
+//Yannick Bruns
 async function getCoordinates(city, country){
     return new Promise(resolve => {
         http.get('http://weather:8090/coordinates?city=' + city + '&country=' + country, (resp) => {
@@ -190,6 +198,7 @@ async function getCoordinates(city, country){
     });
 }
 
+//Yannick Bruns, Sarah Koch
 async function interpretMessage(text){
     return new Promise(resolve => {
         const data = JSON.stringify({
@@ -227,7 +236,7 @@ async function interpretMessage(text){
     });
 }
 
-
+//Yannick Bruns, Sarah Koch
 async function answerMessage(userID, text){
     return new Promise(resolve => {
         const data = JSON.stringify({
@@ -266,6 +275,7 @@ async function answerMessage(userID, text){
     });
 }
 
+//Patrick Langkau
 async function onNewWebsocketConnection(socket) {
     console.info(`Socket ${socket.id} has connected.`);
     users.push({
@@ -520,6 +530,7 @@ async function onNewWebsocketConnection(socket) {
     });
 }
 
+//Patrick Langkau
 function startServer() {
     // create a new express app
     const app = express();
