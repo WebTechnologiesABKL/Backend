@@ -8,13 +8,13 @@ const SERVER_PORT = 8085;
 const users = [];
 
 //Yannick Bruns
-Date.prototype.addHours = function(h) {
-    this.setTime(this.getTime() + (h*60*60*1000));
+Date.prototype.addHours = function (h) {
+    this.setTime(this.getTime() + (h * 60 * 60 * 1000));
     return this;
 }
 
 //Yannick Bruns, Sarah Koch
-function convertDateToString(date){
+function convertDateToString(date) {
     let dateString = "";
     switch (date.getDay()) {
         case 0:
@@ -39,27 +39,27 @@ function convertDateToString(date){
             dateString = "Samstag, den ";
             break;
     }
-    if(date.getDate() < 10){
+    if (date.getDate() < 10) {
         dateString += "0" + date.getDate();
-    }else{
+    } else {
         dateString += date.getDate();
     }
-    if(date.getMonth() < 9){
+    if (date.getMonth() < 9) {
         dateString += ".0" + (date.getMonth() + 1);
-    }else{
+    } else {
         dateString += "." + (date.getMonth() + 1);
     }
     dateString += "." + date.getFullYear();
 
-    if(date.getHours() < 10){
+    if (date.getHours() < 10) {
         dateString += " - 0" + date.getHours();
-    }else{
+    } else {
         dateString += " - " + date.getHours();
     }
 
-    if(date.getMinutes() < 10){
+    if (date.getMinutes() < 10) {
         dateString += ":0" + date.getMinutes();
-    }else{
+    } else {
         dateString += ":" + date.getMinutes();
     }
 
@@ -72,7 +72,7 @@ function capitalizeFirstLetter(string) {
 }
 
 //Yannick Bruns, Sarah Koch
-function convertWeatherToString(weather){
+function convertWeatherToString(weather) {
     let icon = weather.weather.weather[0].icon;
     switch (icon) {
         case "clear-day":
@@ -115,12 +115,11 @@ function convertWeatherToString(weather){
     let weatherString = icon + ' bei ' + weather.weather.weather[0].temperature + '°C.';
 
 
-
     return weatherString;
 }
 
 //Yannick Bruns
-async function getWeather(time, lat, lon){
+async function getWeather(time, lat, lon) {
     return new Promise(resolve => {
         http.get('http://weather:8090/weather?lat=' + lat + '&lon=' + lon + '&time=' + time, (resp) => {
             let data = '';
@@ -145,7 +144,7 @@ async function getWeather(time, lat, lon){
 }
 
 //Yannick Bruns
-async function getIP(ip){
+async function getIP(ip) {
     return new Promise(resolve => {
         http.get('http://weather:8090/ip?ip=' + ip, (resp) => {
             let data = '';
@@ -174,7 +173,7 @@ async function getIP(ip){
 }
 
 //Yannick Bruns
-async function getCoordinates(city, country){
+async function getCoordinates(city, country) {
     return new Promise(resolve => {
         http.get('http://weather:8090/coordinates?city=' + city + '&country=' + country, (resp) => {
             let data = '';
@@ -199,7 +198,7 @@ async function getCoordinates(city, country){
 }
 
 //Yannick Bruns, Sarah Koch
-async function interpretMessage(text){
+async function interpretMessage(text) {
     return new Promise(resolve => {
         const data = JSON.stringify({
             text: text
@@ -237,7 +236,7 @@ async function interpretMessage(text){
 }
 
 //Yannick Bruns, Sarah Koch
-async function answerMessage(userID, text){
+async function answerMessage(userID, text) {
     return new Promise(resolve => {
         const data = JSON.stringify({
             user: userID,
@@ -288,40 +287,40 @@ async function onNewWebsocketConnection(socket) {
     });
     for (const user of users) {
         const i = users.indexOf(user);
-       if(user.socketId == socket.id){
-           try{
-               let ipCity = await getIP(user.ipAddress);
-               if(await ipCity.error){
-                   console.log("------------------------------------------------------------------------");
-                   console.log("Could not interpret IP Address!");
-                   users[i].lastCountry = "DE";
-                   users[i].lastCity = "Bielefeld";
-                   console.log("------------------------------------------------------------------------");
-               }else{
-                   console.log("------------------------------------------------------------------------");
-                   console.log("IP-Data:");
-                   console.log(JSON.stringify(await ipCity));
-                   if(await ipCity.city){
-                       users[i].lastCity = await ipCity.city;
-                   }else{
-                       users[i].lastCity = "Bielefeld";
-                   }
-                   if(await ipCity.country){
-                       users[i].lastCountry = await ipCity.country;
-                   }else{
-                       users[i].lastCountry = "DE";
-                   }
+        if (user.socketId == socket.id) {
+            try {
+                let ipCity = await getIP(user.ipAddress);
+                if (await ipCity.error) {
+                    console.log("------------------------------------------------------------------------");
+                    console.log("Could not interpret IP Address!");
+                    users[i].lastCountry = "DE";
+                    users[i].lastCity = "Bielefeld";
+                    console.log("------------------------------------------------------------------------");
+                } else {
+                    console.log("------------------------------------------------------------------------");
+                    console.log("IP-Data:");
+                    console.log(JSON.stringify(await ipCity));
+                    if (await ipCity.city) {
+                        users[i].lastCity = await ipCity.city;
+                    } else {
+                        users[i].lastCity = "Bielefeld";
+                    }
+                    if (await ipCity.country) {
+                        users[i].lastCountry = await ipCity.country;
+                    } else {
+                        users[i].lastCountry = "DE";
+                    }
 
-                   console.log("------------------------------------------------------------------------");
-               }
-           }catch(e){
-               console.log("------------------------------------------------------------------------");
-               console.log("Could not interpret IP Address!");
-               users[i].lastCountry = "DE";
-               users[i].lastCity = "Bielefeld";
-               console.log("------------------------------------------------------------------------");
-           }
-       }
+                    console.log("------------------------------------------------------------------------");
+                }
+            } catch (e) {
+                console.log("------------------------------------------------------------------------");
+                console.log("Could not interpret IP Address!");
+                users[i].lastCountry = "DE";
+                users[i].lastCity = "Bielefeld";
+                console.log("------------------------------------------------------------------------");
+            }
+        }
     }
     console.log("------------------------------------------------------------------------");
     console.log("Users:");
@@ -336,7 +335,7 @@ async function onNewWebsocketConnection(socket) {
     socket.on("disconnect", () => {
         console.info(`Socket ${socket.id} has disconnected.`);
         users.forEach((user, i) => {
-            if(user.socketId == socket.id){
+            if (user.socketId == socket.id) {
                 users.splice(i, 1);
             }
         });
@@ -347,20 +346,20 @@ async function onNewWebsocketConnection(socket) {
     });
 
     // echoes on the terminal every "hello" message this socket sends
-    socket.on("chat", async function(data){
+    socket.on("chat", async function (data) {
         console.info(`Socket ${socket.id} has sent information:`);
         console.info(data);
         socket.emit("writing", {
-           active: true
+            active: true
         });
 
-        try{
+        try {
             let time = new Date().addHours(1);
             let country = "DE";
             let city = "Bielefeld";
             users.forEach((user, i) => {
-                if(user.socketId == socket.id){
-                    if(users[i].lastCity !== "new"){
+                if (user.socketId == socket.id) {
+                    if (users[i].lastCity !== "new") {
                         city = users[i].lastCity;
                         country = users[i].lastCountry;
                         time = users[i].lastTime;
@@ -374,44 +373,43 @@ async function onNewWebsocketConnection(socket) {
             console.log("interpretation:");
             console.log(JSON.stringify(await interpretation));
             console.log("------------------------------------------------------------------------");
-            if((await interpretation.entities.length > 0 && (await interpretation.entities[0].entity === "LOC" || await interpretation.entities[0].entity === "time")) || await interpretation.intent.name == "weather"){
+            if ((await interpretation.entities.length > 0 && (await interpretation.entities[0].entity === "LOC" || await interpretation.entities[0].entity === "time")) || await interpretation.intent.name == "weather") {
                 await interpretation.entities.forEach(entity => {
-                    if(entity.entity === "LOC"){
+                    if (entity.entity === "LOC") {
                         city = entity.value;
                         city = city.replaceAll('?', '');
                         city = capitalizeFirstLetter(city);
-                    }else if(entity.entity === "time"){
-                        if(entity.value.from){
+                    } else if (entity.entity === "time") {
+                        if (entity.value.from) {
                             time = new Date(((new Date(entity.value.from)).getTime() + (new Date(entity.value.to)).getTime()) / 2);
-                        }else{
-                            if(new Date(entity.value).getHours() <= 2){
+                        } else {
+                            if (new Date(entity.value).getHours() <= 2) {
                                 time = (new Date(entity.value)).addHours(6);
-                            }else if(new Date(entity.value).getHours() >= 22){
+                            } else if (new Date(entity.value).getHours() >= 22) {
                                 time = (new Date(entity.value)).addHours(8);
-                            }
-                            else{
+                            } else {
                                 time = (new Date(entity.value))
                             }
                         }
                     }
                 });
                 let coordinates = await getCoordinates(city, country);
-                if(!await coordinates.lon && !await coordinates.lat){
+                if (!await coordinates.lon && !await coordinates.lat) {
                     throw new Error("Error getting Coordinates from City & Country");
                 }
                 let weather = await getWeather(time, await coordinates.lat, await coordinates.lon);
-                try{
-                    if(await weather){
+                try {
+                    if (await weather) {
                         let weatherString = convertWeatherToString(await weather);
                         let oldTime = new Date(time);
-                        time.setHours(1,0,0,0);
+                        time.setHours(1, 0, 0, 0);
                         let fullWeather = await getWeather(time, await coordinates.lat, await coordinates.lon);
                         setTimeout(async () => {
                             socket.emit("writing", {
                                 active: false
                             });
                             socket.emit("chat", {
-                                message: 'Das Wetter in ' + city + ', ' + country + ' ist am '+ convertDateToString(oldTime) +
+                                message: 'Das Wetter in ' + city + ', ' + country + ' ist am ' + convertDateToString(oldTime) +
                                     ' ' + weatherString,
                                 weather: await fullWeather,
                                 videoWeather: await weather,
@@ -423,7 +421,7 @@ async function onNewWebsocketConnection(socket) {
                                 active: true
                             });
                             users.forEach((user, i) => {
-                                if(user.socketId == socket.id){
+                                if (user.socketId == socket.id) {
                                     users[i].lastMessage = data.message;
                                     users[i].lastCity = city;
                                     users[i].lastCountry = country;
@@ -435,15 +433,15 @@ async function onNewWebsocketConnection(socket) {
                                 for (let i = 1; i < 7; i++) {
                                     time = time.addHours(24);
                                     let weatherI = await getWeather(time, await coordinates.lat, await coordinates.lon);
-                                    if(i === 6 && await weatherI){
+                                    if (i === 6 && await weatherI) {
                                         forecast.push(await weatherI);
                                         resolve(forecast);
-                                    }else{
+                                    } else {
                                         forecast.push(await weatherI);
                                     }
                                 }
                             });
-                            if(await finished){
+                            if (await finished) {
                                 console.log("------------------------------------------------------------------------");
                                 console.log("forecast:");
                                 console.log(await finished);
@@ -458,14 +456,14 @@ async function onNewWebsocketConnection(socket) {
                                         country: country
                                     });
                                 }, 2000);
-                            }else{
+                            } else {
                                 socket.emit("writing", {
                                     active: false
                                 });
                             }
                         }, 1000);
                     }
-                }catch(e){
+                } catch (e) {
                     console.error("Unknown Error occurred:");
                     console.error(e);
                     console.log("------------------------------------------------------------------------");
@@ -477,7 +475,7 @@ async function onNewWebsocketConnection(socket) {
                         weather: null
                     });
                 }
-            }else{
+            } else {
                 let answer = await answerMessage(socket.id, data.message);
                 console.log("------------------------------------------------------------------------");
                 console.log("answer:");
@@ -486,21 +484,21 @@ async function onNewWebsocketConnection(socket) {
                 socket.emit("writing", {
                     active: false
                 });
-                if(await answer.length > 0){
+                if (await answer.length > 0) {
                     await answer.forEach(a => {
-                        if(a.text){
+                        if (a.text) {
                             socket.emit("chat", {
                                 message: a.text,
                                 weather: null
                             });
-                        }else if(a.image){
+                        } else if (a.image) {
                             socket.emit("image", {
                                 image: a.image,
                                 weather: null
                             });
                         }
                     })
-                }else{
+                } else {
                     socket.emit("chat", {
                         message: "Ich habe Probleme deine Anfrage zu beantworten...",
                         weather: null
@@ -508,12 +506,12 @@ async function onNewWebsocketConnection(socket) {
                 }
 
                 users.forEach((user, i) => {
-                    if(user.socketId == socket.id){
+                    if (user.socketId == socket.id) {
                         users[i].lastMessage = data.message;
                     }
                 });
             }
-        }catch(e){
+        } catch (e) {
             console.error("Unknown Error occurred:");
             console.error(e);
             console.log("------------------------------------------------------------------------");
