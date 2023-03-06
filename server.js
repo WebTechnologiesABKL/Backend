@@ -373,7 +373,7 @@ async function onNewWebsocketConnection(socket) {
             console.log("interpretation:");
             console.log(JSON.stringify(await interpretation));
             console.log("------------------------------------------------------------------------");
-            if ((await interpretation.entities.length > 0 && (await interpretation.entities[0].entity === "LOC" || await interpretation.entities[0].entity === "time"|| await interpretation.entities[0].entity === "city")) || await interpretation.intent.name == "weather") {
+            if ((await interpretation.entities.length > 0 && (await interpretation.entities[0].entity === "LOC" || await interpretation.entities[0].entity === "time" || await interpretation.entities[0].entity === "city")) || await interpretation.intent.name == "weather") {
                 await interpretation.entities.forEach(entity => {
                     if (entity.entity === "LOC") {
                         city = entity.value;
@@ -429,7 +429,7 @@ async function onNewWebsocketConnection(socket) {
                                     users[i].lastMessage = data.message;
                                     users[i].lastCity = city;
                                     users[i].lastCountry = country;
-                                    users[i].lastTime = time;
+                                    users[i].lastTime = new Date(time);
                                 }
                             });
                             let finished = new Promise(async (resolve) => {
